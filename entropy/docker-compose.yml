@@ -1,0 +1,17 @@
+version: '3'
+services:
+  redis:
+    image: redis:6.0.5-alpine
+  celery:
+    build: .
+    command: celery -A entropy worker -B -l info -E
+    depends_on:
+      - redis
+  app:
+    build: .
+    command: bash -c "pytest && python /code/manage.py migrate --noinput && python /code/manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    depends_on:
+      - celery
+      - redis
